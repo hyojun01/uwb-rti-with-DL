@@ -30,6 +30,7 @@ All physical, geometric, and training constants in one place:
 - **Parameter ranges:** bias U(90,100), alpha U(0.9,1.0), noise sigma U(0.3,3.0), SLF noise sigma U(0.01,0.05), kappa=0.21
 - **Training:** dataset sizes (40k MLP, 20k CFP, 1k test), batch size, learning rates, epochs, patience — all per spec
 - **Device:** auto-detect CUDA via `torch.device("cuda" if torch.cuda.is_available() else "cpu")`
+- **Reproducibility:** `RANDOM_SEED` constant, set in NumPy and PyTorch at data generation and training entry points
 
 Pixel center positions: `x_k = (c + 0.5) * (3.0 / 30)`, `y_k = (r + 0.5) * (3.0 / 30)`.
 
@@ -70,11 +71,12 @@ All vectorized with NumPy. Weight matrix computed once and reused.
 - Covariance matrix C (900x900): `C[k,l] = sigma_theta^2 * exp(-D_kl / kappa)`
 - D_kl is Euclidean distance between pixel centers k and l
 - Sample from `N(0, C)` using Cholesky decomposition
-- Covariance matrix and its Cholesky factor computed once, scaled by sigma_theta per sample
+- Pre-compute `L = cholesky(C_base)` where `C_base[k,l] = exp(-D_kl / kappa)` (once). For each sample, generate noise as `theta_tilde = sigma_theta * L @ z` where `z ~ N(0, I)`
 
 **`generate_dataset(num_samples)`:**
 - For each sample: generate theta*, sample sigma_theta ~ U(0.01, 0.05), compute theta = theta* + noise, sample b/alpha/sigma_eps, compute RSS
 - Returns: RSS vectors (N, 16), noisy SLF images (N, 900), ideal SLF images (N, 900)
+- Total generated samples: 61,000 (40k MLP + 20k CFP + 1k separate test set)
 - Saves to disk as `.npz` files
 
 **Normalization:**
@@ -106,7 +108,7 @@ PyTorch `nn.Module`. Input: (batch, 1, 30, 30).
     - Add input of block (residual connection)
   - BN -> ReLU
 - **Merge:** Add shortcut + residual path
-- BN -> ReLU -> Conv2d(1x1, 48 filters) -> Add (residual from merge) -> Dropout(0.3) -> Conv2d(1x1, 1 filter) -> Output (batch, 1, 30, 30)
+- BN -> ReLU -> Conv2d(1x1, 48 filters) -> Add the merge output (residual skip around the 1x1 48-filter conv) -> Dropout(0.3) -> Conv2d(1x1, 1 filter) -> Output (batch, 1, 30, 30)
 
 ### `train.py` — Training Script
 
@@ -129,6 +131,7 @@ PyTorch `nn.Module`. Input: (batch, 1, 30, 30).
 - Per-sample RMSE: `sqrt(mean((theta_pred - theta_true)^2))`
 - Per-sample SSIM via `skimage.metrics.structural_similarity` on 30x30 images
 - Prints comparison table with average RMSE and SSIM
+- **Multi-noise-level evaluation:** Generate or evaluate test sets at several fixed noise levels (e.g., sigma_eps in {0.5, 1.0, 2.0, 3.0}) and produce a quantitative comparison table of RMSE and SSIM for MLP vs MLP+CFP across these levels
 
 ### `validate_model.py` — Mathematical Model Validation
 
@@ -141,6 +144,7 @@ PyTorch `nn.Module`. Input: (batch, 1, 30, 30).
 - Training loss curves (train/val vs epoch)
 - Reconstruction grid: ground truth | MLP output | MLP+CFP output
 - Error maps: |predicted - ground truth| per method
+- Quantitative comparison table across noise levels (from evaluate.py results)
 - All plots saved as PNG via matplotlib
 
 ### `main.py` — Main Execution Pipeline
