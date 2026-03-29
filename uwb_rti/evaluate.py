@@ -7,8 +7,6 @@ from .config import (
     DEVICE, GRID_SIZE, NUM_LINKS, NUM_PIXELS,
     SCALING_C, RANDOM_SEED, BATCH_SIZE,
 )
-from .models.mlp_model import MLPModel
-from .models.cfp_model import CFPModel
 
 
 def compute_rmse(pred, true):

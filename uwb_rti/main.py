@@ -1,9 +1,8 @@
 import argparse
 import os
-import numpy as np
 import torch
 
-from .config import DEVICE, RANDOM_SEED, GRID_SIZE
+from .config import DEVICE, RANDOM_SEED
 from .forward_model import compute_weight_matrix
 from .validate_model import run_all_validations
 from .data_generator import generate_and_save_all_datasets
