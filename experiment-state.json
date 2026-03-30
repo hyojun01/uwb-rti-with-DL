@@ -1,11 +1,11 @@
 {
   "project": "uwb-rti-autoresearch",
-  "status": "running",
+  "status": "paused",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 41,
+  "total_experiments": 43,
   "best": {
-    "commit": "f6c9345",
+    "commit": "d7e866b",
     "test_rmse": 0.052170,
     "test_ssim": 0.774337,
     "cfp_test_rmse": 0.051292,
@@ -26,20 +26,26 @@
     "cfp_test_rmse": "0.053058 → 0.051292 (-3.3%)",
     "cfp_test_ssim": "0.735013 → 0.793598 (+8.0%)"
   },
-  "failed_since_last_kept": [
-    {"id": 35, "description": "L1 weight 0.2", "result": "SSIM better but RMSE increased"},
-    {"id": 37, "description": "Sigmoid + MSE+L1 + OneCycleLR", "result": "RMSE 0.055 terrible"},
-    {"id": 38, "description": "SiLU activation", "result": "RMSE 0.062 terrible"},
-    {"id": 39, "description": "CFP OneCycleLR", "result": "CFP RMSE worse"},
-    {"id": 40, "description": "Gradient clipping", "result": "No change"},
-    {"id": 41, "description": "Fewer wider layers", "result": "RMSE 0.054 worse"}
-  ],
-  "idea_queue": [
-    "mlp: pure L1 loss (no MSE)",
-    "mlp: AdamW with weight decay + current setup",
-    "cfp: higher CFP LR (2e-3) with ReduceLROnPlateau",
-    "mlp: Huber loss (delta=1.0) — large delta for near-MSE behavior with outlier robustness",
-    "mlp: try batch size 128 for more gradient noise"
-  ],
-  "notes": "41 experiments, 5 kept. Approaching diminishing returns. Key insight: MSE+L1 loss is the most impactful single change, benefiting both models."
+  "key_findings": {
+    "what_worked": [
+      "Wider MLP layers (more capacity for 900-dim output)",
+      "Adam optimizer for CFP (vs SGD)",
+      "OneCycleLR scheduler with warmup (vs ReduceLROnPlateau)",
+      "MSE+L1 combined loss (L1 matches sparse target distribution)"
+    ],
+    "what_consistently_failed": [
+      "Activation changes (GELU, SiLU both terrible, ReLU is optimal)",
+      "Dropout reduction (model needs regularization)",
+      "Sigmoid output (amazing SSIM but always hurts RMSE)",
+      "Wider CFP channels (MLP quality is the bottleneck, not CFP capacity)",
+      "Deeper/tapered MLP (compression before output hurts)",
+      "Weight decay (not needed with existing BatchNorm+Dropout)"
+    ],
+    "interesting_tradeoffs": [
+      "Sigmoid gives SSIM 0.82-0.85 but RMSE 0.053+ (fundamental RMSE/SSIM tension)",
+      "Huber loss consistently boosts SSIM at RMSE cost",
+      "L1 weight 0.2 gives better SSIM but slightly worse RMSE than 0.1"
+    ]
+  },
+  "notes": "43 experiments, 5 kept. Model is well-optimized. Next session could explore: different data augmentation, ensemble methods, or completely different architectures."
 }
