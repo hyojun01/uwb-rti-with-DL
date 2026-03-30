@@ -65,7 +65,10 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
               f"Train: {train_loss:.6f} - Val: {val_loss:.6f} - LR: {lr:.2e}")
 
         if scheduler is not None:
-            scheduler.step(val_loss)
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(val_loss)
+            else:
+                scheduler.step()
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
