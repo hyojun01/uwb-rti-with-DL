@@ -3,7 +3,7 @@
   "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 2,
+  "total_experiments": 3,
   "best": {
     "commit": "baseline",
     "test_rmse": 0.053370,
@@ -37,13 +37,24 @@
       "total_seconds": 515.5,
       "kept": false,
       "commit": "reverted"
+    },
+    {
+      "id": 3,
+      "description": "mlp: try GELU activation instead of ReLU",
+      "status": "success",
+      "test_rmse": 0.056240,
+      "test_ssim": 0.604851,
+      "cfp_test_rmse": 0.055185,
+      "cfp_test_ssim": 0.726484,
+      "total_seconds": 557.6,
+      "kept": false,
+      "commit": "reverted"
     }
   ],
   "idea_queue": [
     "mlp: increase hidden dims (256→512→1024→2048→4096→900)",
     "mlp: reduce to 3 layers (16→512→1024→900) for faster training",
     "mlp: try LeakyReLU instead of ReLU",
-    "mlp: try GELU activation",
     "mlp: try SiLU/Swish activation",
     "mlp: add skip connections (input concatenated to later layers)",
     "mlp: remove dropout entirely",
@@ -73,7 +84,8 @@
   ],
   "ideas_tried": [
     "baseline: run unmodified code to establish baseline metrics",
-    "mlp: reduce dropout from 0.3 to 0.1 — WORSE (RMSE 0.0540, SSIM 0.6028)"
+    "mlp: reduce dropout from 0.3 to 0.1 — WORSE (RMSE 0.0540, SSIM 0.6028)",
+    "mlp: try GELU activation — WORSE (RMSE 0.0562, SSIM 0.6049)"
   ],
-  "notes": "Baseline MLP RMSE 0.0534, CFP RMSE 0.0531. Reducing dropout hurt — model may need regularization. Try activation changes or architecture next."
+  "notes": "Baseline MLP RMSE 0.0534, CFP RMSE 0.0531. Both dropout reduction and GELU hurt. ReLU+BN+dropout(0.3) seems well-tuned for activations. Try training/optimizer changes next."
 }
