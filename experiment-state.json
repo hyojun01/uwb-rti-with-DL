@@ -3,15 +3,15 @@
   "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 3,
+  "total_experiments": 6,
   "best": {
-    "commit": "baseline",
-    "test_rmse": 0.053370,
-    "test_ssim": 0.671413,
-    "cfp_test_rmse": 0.053058,
-    "cfp_test_ssim": 0.735013,
-    "description": "baseline: unmodified code",
-    "experiment_id": 1
+    "commit": "713b920",
+    "test_rmse": 0.052718,
+    "test_ssim": 0.660588,
+    "cfp_test_rmse": 0.052547,
+    "cfp_test_ssim": 0.729319,
+    "description": "mlp: wider layers (512→1024→2048→4096→900)",
+    "experiment_id": 6
   },
   "experiments": [
     {
@@ -49,25 +49,57 @@
       "total_seconds": 557.6,
       "kept": false,
       "commit": "reverted"
+    },
+    {
+      "id": 4,
+      "description": "mlp: Huber loss (delta=0.1) instead of MSE",
+      "status": "success",
+      "test_rmse": 0.055469,
+      "test_ssim": 0.750490,
+      "cfp_test_rmse": 0.055125,
+      "cfp_test_ssim": 0.688203,
+      "total_seconds": 556.8,
+      "kept": false,
+      "commit": "reverted",
+      "notes": "SSIM dramatically improved but RMSE regressed"
+    },
+    {
+      "id": 5,
+      "description": "mlp: AdamW (weight_decay=1e-4) + CosineAnnealingLR",
+      "status": "success",
+      "test_rmse": 0.053700,
+      "test_ssim": 0.666306,
+      "cfp_test_rmse": 0.053292,
+      "cfp_test_ssim": 0.733496,
+      "total_seconds": 560.3,
+      "kept": false,
+      "commit": "reverted"
+    },
+    {
+      "id": 6,
+      "description": "mlp: wider layers (512→1024→2048→4096→900)",
+      "status": "success",
+      "test_rmse": 0.052718,
+      "test_ssim": 0.660588,
+      "cfp_test_rmse": 0.052547,
+      "cfp_test_ssim": 0.729319,
+      "total_seconds": 739.3,
+      "kept": true,
+      "commit": "713b920"
     }
   ],
   "idea_queue": [
-    "mlp: increase hidden dims (256→512→1024→2048→4096→900)",
-    "mlp: reduce to 3 layers (16→512→1024→900) for faster training",
     "mlp: try LeakyReLU instead of ReLU",
     "mlp: try SiLU/Swish activation",
     "mlp: add skip connections (input concatenated to later layers)",
     "mlp: remove dropout entirely",
-    "mlp: increase dropout to 0.5",
     "mlp: try layer normalization instead of batch normalization",
     "mlp: add weight decay (1e-4) to Adam",
-    "mlp: increase learning rate to 3e-3",
     "mlp: decrease learning rate to 1e-4",
-    "mlp: use cosine annealing scheduler instead of ReduceLROnPlateau",
     "mlp: use OneCycleLR scheduler",
     "mlp: add residual connections between hidden layers",
-    "mlp: use Huber loss instead of MSE",
     "mlp: add L1 regularization for sparsity",
+    "mlp: add 5th hidden layer (512→1024→2048→4096→4096→900)",
     "cfp: increase residual blocks from 4 to 6",
     "cfp: reduce residual blocks from 4 to 2",
     "cfp: increase channel width (32→64 in residual path)",
@@ -79,13 +111,15 @@
     "cfp: try Huber loss instead of MSE",
     "both: reduce total batch size to 128",
     "both: increase total batch size to 512",
-    "both: use mixed precision training (autocast)",
-    "mlp: try wider bottleneck (16→1024→2048→1024→900)"
+    "both: use mixed precision training (autocast)"
   ],
   "ideas_tried": [
     "baseline: run unmodified code to establish baseline metrics",
-    "mlp: reduce dropout from 0.3 to 0.1 — WORSE (RMSE 0.0540, SSIM 0.6028)",
-    "mlp: try GELU activation — WORSE (RMSE 0.0562, SSIM 0.6049)"
+    "mlp: reduce dropout from 0.3 to 0.1 — WORSE",
+    "mlp: try GELU activation — WORSE",
+    "mlp: Huber loss (delta=0.1) — WORSE RMSE but great SSIM",
+    "mlp: AdamW + CosineAnnealingLR — marginal worse",
+    "mlp: wider layers (512→1024→2048→4096→900) — IMPROVED RMSE 0.0527"
   ],
-  "notes": "Baseline MLP RMSE 0.0534, CFP RMSE 0.0531. Both dropout reduction and GELU hurt. ReLU+BN+dropout(0.3) seems well-tuned for activations. Try training/optimizer changes next."
+  "notes": "Wider MLP improved RMSE from 0.0534→0.0527. Capacity matters. SSIM dropped slightly. Try CFP improvements now or further MLP width."
 }
