@@ -3,7 +3,7 @@
   "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 1,
+  "total_experiments": 2,
   "best": {
     "commit": "baseline",
     "test_rmse": 0.053370,
@@ -22,11 +22,21 @@
       "test_ssim": 0.671413,
       "cfp_test_rmse": 0.053058,
       "cfp_test_ssim": 0.735013,
-      "mlp_val_loss": null,
-      "cfp_val_loss": null,
       "total_seconds": 555.3,
       "kept": true,
       "commit": "baseline"
+    },
+    {
+      "id": 2,
+      "description": "mlp: reduce dropout from 0.3 to 0.1",
+      "status": "success",
+      "test_rmse": 0.054000,
+      "test_ssim": 0.602788,
+      "cfp_test_rmse": 0.053434,
+      "cfp_test_ssim": 0.717132,
+      "total_seconds": 515.5,
+      "kept": false,
+      "commit": "reverted"
     }
   ],
   "idea_queue": [
@@ -36,7 +46,6 @@
     "mlp: try GELU activation",
     "mlp: try SiLU/Swish activation",
     "mlp: add skip connections (input concatenated to later layers)",
-    "mlp: reduce dropout from 0.3 to 0.1",
     "mlp: remove dropout entirely",
     "mlp: increase dropout to 0.5",
     "mlp: try layer normalization instead of batch normalization",
@@ -63,7 +72,8 @@
     "mlp: try wider bottleneck (16→1024→2048→1024→900)"
   ],
   "ideas_tried": [
-    "baseline: run unmodified code to establish baseline metrics"
+    "baseline: run unmodified code to establish baseline metrics",
+    "mlp: reduce dropout from 0.3 to 0.1 — WORSE (RMSE 0.0540, SSIM 0.6028)"
   ],
-  "notes": "Baseline established. MLP RMSE 0.0534, CFP RMSE 0.0531. CFP improves slightly. Focus on MLP improvements first since CFP depends on MLP quality."
+  "notes": "Baseline MLP RMSE 0.0534, CFP RMSE 0.0531. Reducing dropout hurt — model may need regularization. Try activation changes or architecture next."
 }
