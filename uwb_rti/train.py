@@ -16,6 +16,17 @@ from .models.mlp_model import MLPModel
 from .models.cfp_model import CFPModel
 
 
+class MSEPlusL1Loss(nn.Module):
+    def __init__(self, l1_weight=0.1):
+        super().__init__()
+        self.mse = nn.MSELoss()
+        self.l1 = nn.L1Loss()
+        self.l1_weight = l1_weight
+
+    def forward(self, pred, target):
+        return self.mse(pred, target) + self.l1_weight * self.l1(pred, target)
+
+
 def train_loop(model, train_loader, val_loader, criterion, optimizer,
                scheduler, epochs, patience, device, use_amp=False):
     """Training loop with optional early stopping.
@@ -121,7 +132,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     )
 
     model = MLPModel().to(DEVICE)
-    criterion = nn.MSELoss()
+    criterion = MSEPlusL1Loss(l1_weight=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=MLP_LR)
     steps_per_epoch = len(train_loader)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
