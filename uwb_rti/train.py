@@ -205,7 +205,7 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     )
 
     model = CFPModel().to(DEVICE)
-    criterion = nn.MSELoss()
+    criterion = MSEPlusL1Loss(l1_weight=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=15)
 
