@@ -17,7 +17,7 @@ from .models.cfp_model import CFPModel
 
 
 def train_loop(model, train_loader, val_loader, criterion, optimizer,
-               scheduler, epochs, patience, device):
+               scheduler, epochs, patience, device, use_amp=False):
     """Training loop with optional early stopping.
 
     Returns:
@@ -27,6 +27,7 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
     patience_counter = 0
     best_state = None
     history = {"train_loss": [], "val_loss": []}
+    scaler = torch.amp.GradScaler(enabled=use_amp)
 
     for epoch in range(epochs):
         model.train()
@@ -36,10 +37,12 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
             batch_y = batch_y.to(device)
 
             optimizer.zero_grad()
-            output = model(batch_x)
-            loss = criterion(output, batch_y)
-            loss.backward()
-            optimizer.step()
+            with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+                output = model(batch_x)
+                loss = criterion(output, batch_y)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             total_train_loss += loss.item() * batch_x.size(0)
 
@@ -51,8 +54,9 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
             for batch_x, batch_y in val_loader:
                 batch_x = batch_x.to(device)
                 batch_y = batch_y.to(device)
-                output = model(batch_x)
-                loss = criterion(output, batch_y)
+                with torch.amp.autocast(device_type=device.type, enabled=use_amp):
+                    output = model(batch_x)
+                    loss = criterion(output, batch_y)
                 total_val_loss += loss.item() * batch_x.size(0)
 
         val_loss = total_val_loss / len(val_loader.dataset)
@@ -118,6 +122,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
         scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
+        use_amp=(DEVICE.type == "cuda"),
     )
 
     path = os.path.join(checkpoint_dir, "mlp_best.pt")
