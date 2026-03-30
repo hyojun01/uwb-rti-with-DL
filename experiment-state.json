@@ -3,44 +3,40 @@
   "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 34,
+  "total_experiments": 36,
   "best": {
-    "commit": "0951290",
+    "commit": "f6c9345",
     "test_rmse": 0.052170,
     "test_ssim": 0.774337,
-    "cfp_test_rmse": 0.051448,
-    "cfp_test_ssim": 0.761930,
-    "description": "MSE+L1 combined loss (L1 weight=0.1)",
-    "experiment_id": 34
+    "cfp_test_rmse": 0.051292,
+    "cfp_test_ssim": 0.793598,
+    "description": "MSE+L1 loss for both MLP and CFP",
+    "experiment_id": 36
   },
   "kept_experiments": [
-    {"id": 6, "description": "mlp: wider layers (512→1024→2048→4096→900)", "test_rmse": 0.052718, "test_ssim": 0.660588},
-    {"id": 7, "description": "cfp: Adam + ReduceLROnPlateau + early stopping", "cfp_test_rmse": 0.050898, "cfp_test_ssim": 0.765296},
-    {"id": 25, "description": "mlp: OneCycleLR (max_lr=3e-3, 300 epochs)", "test_rmse": 0.052590, "test_ssim": 0.699099},
-    {"id": 34, "description": "mlp: MSE+L1 loss (L1 weight=0.1)", "test_rmse": 0.052170, "test_ssim": 0.774337, "cfp_test_rmse": 0.051448, "cfp_test_ssim": 0.761930}
+    {"id": 6, "description": "mlp: wider layers (512→4096)", "test_rmse": 0.052718, "test_ssim": 0.660588},
+    {"id": 7, "description": "cfp: Adam optimizer", "cfp_test_rmse": 0.050898, "cfp_test_ssim": 0.765296},
+    {"id": 25, "description": "mlp: OneCycleLR", "test_rmse": 0.052590, "test_ssim": 0.699099},
+    {"id": 34, "description": "mlp: MSE+L1 loss", "test_rmse": 0.052170, "test_ssim": 0.774337},
+    {"id": 36, "description": "cfp: MSE+L1 loss", "cfp_test_rmse": 0.051292, "cfp_test_ssim": 0.793598}
   ],
-  "recent_experiments": [
-    {"id": 23, "description": "CFP wider channels 64", "cfp_test_rmse": 0.050644, "kept": false},
-    {"id": 24, "description": "CFP 64ch + epochs 400", "cfp_test_rmse": 0.050882, "kept": false},
-    {"id": 25, "description": "MLP OneCycleLR", "test_rmse": 0.052590, "test_ssim": 0.699099, "kept": true},
-    {"id": 26, "description": "CFP epochs 400", "cfp_test_rmse": 0.051571, "kept": false},
-    {"id": 27, "description": "MLP Sigmoid + OneCycleLR", "test_rmse": 0.054743, "kept": false},
-    {"id": 28, "description": "OneCycleLR max_lr 5e-3", "test_rmse": 0.053094, "kept": false},
-    {"id": 29, "description": "MLP tapered 5th layer", "test_rmse": 0.054645, "kept": false},
-    {"id": 30, "description": "OneCycleLR 500 epochs", "test_rmse": 0.053822, "kept": false},
-    {"id": 31, "description": "OneCycleLR no early stopping", "test_rmse": 0.052590, "kept": false, "notes": "Identical to exp 25"},
-    {"id": 32, "description": "MLP 2x wider (8192)", "test_rmse": 0.054714, "kept": false},
-    {"id": 33, "description": "Weighted MSE 5x", "test_rmse": 0.062824, "kept": false},
-    {"id": 34, "description": "MSE+L1 loss (L1 weight=0.1)", "test_rmse": 0.052170, "test_ssim": 0.774337, "kept": true}
-  ],
+  "progress_from_baseline": {
+    "baseline_test_rmse": 0.053370,
+    "current_test_rmse": 0.052170,
+    "rmse_improvement": 0.001200,
+    "baseline_test_ssim": 0.671413,
+    "current_test_ssim": 0.774337,
+    "ssim_improvement": 0.102924,
+    "baseline_cfp_ssim": 0.735013,
+    "current_cfp_ssim": 0.793598,
+    "cfp_ssim_improvement": 0.058585
+  },
   "idea_queue": [
-    "mlp: try MSE+L1 with different L1 weight (0.05 or 0.2)",
-    "mlp: MSE+L1 + Sigmoid output combo",
-    "cfp: try MSE+L1 loss for CFP too",
-    "mlp: try pure L1 loss",
     "mlp: try SiLU/Swish activation with current setup",
-    "cfp: OneCycleLR for CFP training"
+    "cfp: OneCycleLR for CFP",
+    "mlp: Sigmoid output with MSE+L1",
+    "mlp: try larger L1 weight (0.15) for CFP",
+    "cfp: wider channels (64) now that loss is optimized"
   ],
-  "ideas_tried": "See git log for full 34-experiment history",
-  "notes": "MSE+L1 loss broke through! RMSE 0.0522, SSIM 0.774 — best ever on both. L1 sparsity component helps with sparse targets. Next: tune L1 weight or try on CFP."
+  "notes": "MSE+L1 loss helped both MLP and CFP. Overall: RMSE 0.0534→0.0522, SSIM 0.671→0.774, CFP SSIM 0.735→0.794. Five kept improvements."
 }
