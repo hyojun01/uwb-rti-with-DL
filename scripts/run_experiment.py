@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from uwb_rti.config import DEVICE, RANDOM_SEED
 
-TIME_BUDGET_SECONDS = 900  # 15 minutes max for entire experiment
+TIME_BUDGET_SECONDS = 3600  # 60 minutes max for entire experiment
 
 
 def run_experiment():

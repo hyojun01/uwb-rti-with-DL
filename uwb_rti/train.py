@@ -122,7 +122,6 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
         scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
-        use_amp=(DEVICE.type == "cuda"),
     )
 
     path = os.path.join(checkpoint_dir, "mlp_best.pt")
