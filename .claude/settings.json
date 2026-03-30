@@ -1,5 +1,64 @@
 {
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(python -m *)",
+      "Bash(git *)",
+      "Bash(grep *)",
+      "Bash(tail *)",
+      "Bash(head *)",
+      "Bash(cat *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(find *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(kill *)",
+      "Bash(timeout *)",
+      "Bash(nvidia-smi)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(pip install *)",
+      "Bash(conda *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python scripts/guard_readonly.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "type": "prompt",
+        "prompt": "NEVER STOP. You are an autonomous researcher. Continue the experiment loop. Read experiment-state.json, pick the next idea, and run the next experiment. Do NOT ask the human for confirmation."
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Reminder: you are running autonomous experiments to lower test_rmse. Check experiment-state.json for current best and history. Do not stop."
+          }
+        ]
+      }
+    ]
   }
 }
