@@ -1,70 +1,47 @@
 {
   "project": "uwb-rti-autoresearch",
-  "status": "paused",
+  "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 21,
+  "total_experiments": 25,
   "best": {
-    "commit": "efa4f3a",
-    "test_rmse": 0.052718,
-    "test_ssim": 0.660588,
-    "cfp_test_rmse": 0.050898,
-    "cfp_test_ssim": 0.765296,
-    "description": "wider MLP (512→1024→2048→4096→900) + CFP Adam optimizer",
-    "experiment_id": 7
+    "commit": "a0b4638",
+    "test_rmse": 0.052590,
+    "test_ssim": 0.699099,
+    "cfp_test_rmse": 0.051361,
+    "cfp_test_ssim": 0.758548,
+    "description": "MLP OneCycleLR (max_lr=3e-3, 300 epochs)",
+    "experiment_id": 25
   },
-  "experiments": [
-    {"id": 1, "description": "baseline", "test_rmse": 0.053370, "test_ssim": 0.671413, "cfp_test_rmse": 0.053058, "cfp_test_ssim": 0.735013, "kept": true},
-    {"id": 2, "description": "mlp: dropout 0.3→0.1", "test_rmse": 0.054000, "test_ssim": 0.602788, "kept": false},
-    {"id": 3, "description": "mlp: GELU activation", "test_rmse": 0.056240, "test_ssim": 0.604851, "kept": false},
-    {"id": 4, "description": "mlp: Huber loss (delta=0.1)", "test_rmse": 0.055469, "test_ssim": 0.750490, "cfp_test_rmse": 0.055125, "cfp_test_ssim": 0.688203, "kept": false, "notes": "SSIM great but RMSE regressed"},
-    {"id": 5, "description": "mlp: AdamW + CosineAnnealingLR", "test_rmse": 0.053700, "test_ssim": 0.666306, "kept": false},
-    {"id": 6, "description": "mlp: wider layers (512→1024→2048→4096→900)", "test_rmse": 0.052718, "test_ssim": 0.660588, "cfp_test_rmse": 0.052547, "cfp_test_ssim": 0.729319, "kept": true},
-    {"id": 7, "description": "cfp: Adam + ReduceLROnPlateau + early stopping", "test_rmse": 0.052718, "test_ssim": 0.660588, "cfp_test_rmse": 0.050898, "cfp_test_ssim": 0.765296, "kept": true},
-    {"id": 8, "description": "cfp: wider channels (32→64)", "status": "timeout", "kept": false},
-    {"id": 9, "description": "mlp: AdamW weight_decay=1e-4", "test_rmse": 0.052804, "cfp_test_rmse": 0.050879, "kept": false},
-    {"id": 10, "description": "mlp: residual skip connections", "test_rmse": 0.053827, "kept": false},
-    {"id": 11, "description": "mlp: LR 3e-4 + grad clipping", "test_rmse": 0.053081, "test_ssim": 0.640539, "kept": false},
-    {"id": 12, "description": "cfp: shortcut 1ch→32ch projection", "cfp_test_rmse": 0.050943, "kept": false},
-    {"id": 13, "description": "cfp: Huber loss (delta=0.05)", "cfp_test_rmse": 0.053722, "cfp_test_ssim": 0.805173, "kept": false, "notes": "Amazing SSIM but RMSE regressed"},
-    {"id": 14, "description": "mlp: dropout 0.15/0.1 on wide layers", "test_rmse": 0.052720, "cfp_test_rmse": 0.050655, "kept": false},
-    {"id": 15, "description": "batch_size 512, MLP epochs 300, patience 30", "test_rmse": 0.052856, "kept": false},
-    {"id": 16, "description": "mlp: Sigmoid output", "test_rmse": 0.052981, "test_ssim": 0.821707, "cfp_test_rmse": 0.051382, "kept": false, "notes": "SSIM 0.822 (massive improvement) but RMSE slightly regressed"},
-    {"id": 17, "description": "mlp: Sigmoid + LR 2e-3 + epochs 300", "test_rmse": 0.052774, "test_ssim": 0.828799, "kept": false, "notes": "SSIM 0.829, RMSE still slightly above best"},
-    {"id": 18, "description": "mlp: Sigmoid + epochs 300 + patience 30", "test_rmse": 0.052981, "test_ssim": 0.821707, "kept": false},
-    {"id": 19, "description": "cfp: 6 residual blocks + dropout 0.1", "cfp_test_rmse": 0.050942, "kept": false},
-    {"id": 20, "description": "both: AMP (mixed precision)", "test_rmse": 0.052629, "cfp_test_rmse": 0.051201, "total_seconds": 471.3, "kept": false, "notes": "36% faster, MLP slightly better, CFP slightly worse"},
-    {"id": 21, "description": "both: AMP + MLP epochs 400", "test_rmse": 0.052567, "cfp_test_rmse": 0.051105, "total_seconds": 554.6, "kept": false, "notes": "MLP trending better but CFP worse"}
+  "experiments_summary": "See git log for full history. 25 experiments, 3 kept.",
+  "kept_experiments": [
+    {"id": 6, "description": "mlp: wider layers (512→1024→2048→4096→900)", "test_rmse": 0.052718, "test_ssim": 0.660588},
+    {"id": 7, "description": "cfp: Adam + ReduceLROnPlateau + early stopping", "cfp_test_rmse": 0.050898, "cfp_test_ssim": 0.765296},
+    {"id": 25, "description": "mlp: OneCycleLR (max_lr=3e-3, 300 epochs)", "test_rmse": 0.052590, "test_ssim": 0.699099, "cfp_test_rmse": 0.051361, "cfp_test_ssim": 0.758548}
+  ],
+  "recent_experiments": [
+    {"id": 22, "description": "MLP AMP only + 400 epochs", "test_rmse": 0.052567, "cfp_test_rmse": 0.051245, "kept": false},
+    {"id": 23, "description": "CFP wider channels 64", "cfp_test_rmse": 0.050644, "kept": false, "notes": "Marginal CFP gain, not enough"},
+    {"id": 24, "description": "CFP 64ch + epochs 400", "cfp_test_rmse": 0.050882, "kept": false, "notes": "No improvement over baseline CFP"},
+    {"id": 25, "description": "MLP OneCycleLR (max_lr=3e-3, 300 epochs)", "test_rmse": 0.052590, "test_ssim": 0.699099, "cfp_test_rmse": 0.051361, "cfp_test_ssim": 0.758548, "kept": true}
   ],
   "idea_queue": [
-    "mlp: AMP for MLP only (CFP stays fp32) + more epochs",
-    "mlp: Sigmoid + AMP + fine-tuned LR to cross RMSE threshold",
-    "mlp: try SiLU/Swish activation",
-    "mlp: OneCycleLR scheduler",
-    "cfp: increase epochs to 300 with early stopping",
-    "combined: MSE+L1 weighted loss",
-    "mlp: try wider bottleneck (16→1024→2048→1024→900)"
+    "mlp: Sigmoid output + OneCycleLR combination",
+    "cfp: wider channels 64 (now that MLP is better)",
+    "mlp: try even higher max_lr for OneCycleLR (5e-3)",
+    "mlp: OneCycleLR + epochs 500",
+    "mlp: add 5th layer (512→1024→2048→4096→4096→900)",
+    "cfp: train longer (epochs 400) with current architecture",
+    "mlp: try SiLU/Swish activation with OneCycleLR"
   ],
   "ideas_tried": [
     "baseline — RMSE 0.0534",
-    "mlp: dropout 0.3→0.1 — WORSE",
-    "mlp: GELU — WORSE",
-    "mlp: Huber loss — WORSE RMSE, great SSIM 0.750",
-    "mlp: AdamW + CosineAnnealing — marginal worse",
     "mlp: wider layers — KEPT (RMSE 0.0527)",
-    "cfp: Adam + LR scheduler — KEPT (CFP RMSE 0.0509)",
-    "cfp: wider channels 64 — TIMEOUT",
-    "mlp: AdamW weight decay — marginal worse",
-    "mlp: residual connections — WORSE + slow",
-    "mlp: LR 3e-4 + grad clipping — WORSE",
-    "cfp: shortcut 32ch projection — no change",
-    "cfp: Huber loss — amazing SSIM 0.805 but RMSE regressed",
-    "mlp: dropout reduction on wide layers — no improvement",
-    "batch 512 + more epochs — WORSE",
-    "mlp: Sigmoid output — SSIM 0.822 but slight RMSE regression",
-    "mlp: Sigmoid + LR 2e-3 — SSIM 0.829 but RMSE 0.000056 above best",
-    "AMP both models — faster but CFP hurts",
-    "AMP + more MLP epochs — MLP trends better, CFP still hurts"
+    "cfp: Adam optimizer — KEPT (CFP RMSE 0.0509)",
+    "cfp: wider channels 64 — marginal gain not enough",
+    "cfp: wider 64 + epochs 400 — no improvement",
+    "mlp: OneCycleLR — KEPT (RMSE 0.0526, SSIM 0.699)",
+    "See git log for full history of 25 experiments"
   ],
-  "notes": "Session paused. Best: MLP RMSE 0.0527, CFP RMSE 0.0509. Key findings: (1) Sigmoid gives massive SSIM gains (0.66→0.82) but tiny RMSE cost; (2) AMP speeds training 36% but hurts CFP precision; (3) Huber loss consistently boosts SSIM at RMSE cost. Most promising next: AMP for MLP only + CFP stays fp32."
+  "notes": "OneCycleLR broke the MLP SSIM plateau (0.661→0.699) while also improving RMSE slightly. CFP metrics regressed — try improving CFP separately next."
 }
