@@ -1,21 +1,35 @@
 {
   "project": "uwb-rti-autoresearch",
-  "status": "ready",
-  "branch": "",
+  "status": "running",
+  "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 0,
+  "total_experiments": 1,
   "best": {
-    "commit": null,
-    "test_rmse": null,
-    "test_ssim": null,
-    "cfp_test_rmse": null,
-    "cfp_test_ssim": null,
-    "description": null,
-    "experiment_id": null
+    "commit": "baseline",
+    "test_rmse": 0.053370,
+    "test_ssim": 0.671413,
+    "cfp_test_rmse": 0.053058,
+    "cfp_test_ssim": 0.735013,
+    "description": "baseline: unmodified code",
+    "experiment_id": 1
   },
-  "experiments": [],
+  "experiments": [
+    {
+      "id": 1,
+      "description": "baseline: run unmodified code to establish baseline metrics",
+      "status": "success",
+      "test_rmse": 0.053370,
+      "test_ssim": 0.671413,
+      "cfp_test_rmse": 0.053058,
+      "cfp_test_ssim": 0.735013,
+      "mlp_val_loss": null,
+      "cfp_val_loss": null,
+      "total_seconds": 555.3,
+      "kept": true,
+      "commit": "baseline"
+    }
+  ],
   "idea_queue": [
-    "baseline: run unmodified code to establish baseline metrics",
     "mlp: increase hidden dims (256→512→1024→2048→4096→900)",
     "mlp: reduce to 3 layers (16→512→1024→900) for faster training",
     "mlp: try LeakyReLU instead of ReLU",
@@ -48,6 +62,8 @@
     "both: use mixed precision training (autocast)",
     "mlp: try wider bottleneck (16→1024→2048→1024→900)"
   ],
-  "ideas_tried": [],
-  "notes": "First run should always be baseline. Then iterate."
+  "ideas_tried": [
+    "baseline: run unmodified code to establish baseline metrics"
+  ],
+  "notes": "Baseline established. MLP RMSE 0.0534, CFP RMSE 0.0531. CFP improves slightly. Focus on MLP improvements first since CFP depends on MLP quality."
 }
