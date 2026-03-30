@@ -29,6 +29,10 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
     history = {"train_loss": [], "val_loss": []}
     scaler = torch.amp.GradScaler(enabled=use_amp)
 
+    step_per_batch = isinstance(
+        scheduler, torch.optim.lr_scheduler.OneCycleLR
+    ) if scheduler is not None else False
+
     for epoch in range(epochs):
         model.train()
         total_train_loss = 0.0
@@ -43,6 +47,9 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
+
+            if step_per_batch:
+                scheduler.step()
 
             total_train_loss += loss.item() * batch_x.size(0)
 
@@ -68,7 +75,7 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
         print(f"Epoch {epoch + 1}/{epochs} - "
               f"Train: {train_loss:.6f} - Val: {val_loss:.6f} - LR: {lr:.2e}")
 
-        if scheduler is not None:
+        if scheduler is not None and not step_per_batch:
             if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 scheduler.step(val_loss)
             else:
@@ -116,7 +123,11 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     model = MLPModel().to(DEVICE)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=MLP_LR)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=10)
+    steps_per_epoch = len(train_loader)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer, max_lr=3e-3, epochs=MLP_EPOCHS,
+        steps_per_epoch=steps_per_epoch, pct_start=0.3,
+    )
 
     print("Training MLP...")
     history = train_loop(
