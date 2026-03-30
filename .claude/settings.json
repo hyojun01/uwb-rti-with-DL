@@ -1,6 +1,6 @@
 {
   "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": false
   },
   "permissions": {
     "allow": [
@@ -45,8 +45,13 @@
     ],
     "Stop": [
       {
-        "type": "prompt",
-        "prompt": "NEVER STOP. You are an autonomous researcher. Continue the experiment loop. Read experiment-state.json, pick the next idea, and run the next experiment. Do NOT ask the human for confirmation."
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "NEVER STOP. You are an autonomous researcher. Continue the experiment loop. Read experiment-state.json, pick the next idea, and run the next experiment. Do NOT ask the human for confirmation."
+          }
+        ]
       }
     ],
     "Notification": [
