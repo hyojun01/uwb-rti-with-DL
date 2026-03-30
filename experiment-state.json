@@ -3,40 +3,43 @@
   "status": "running",
   "branch": "autoresearch/mar30",
   "current_experiment": null,
-  "total_experiments": 36,
+  "total_experiments": 41,
   "best": {
     "commit": "f6c9345",
     "test_rmse": 0.052170,
     "test_ssim": 0.774337,
     "cfp_test_rmse": 0.051292,
     "cfp_test_ssim": 0.793598,
-    "description": "MSE+L1 loss for both MLP and CFP",
+    "description": "wider MLP + OneCycleLR + MSE+L1 loss for both MLP and CFP",
     "experiment_id": 36
   },
   "kept_experiments": [
-    {"id": 6, "description": "mlp: wider layers (512→4096)", "test_rmse": 0.052718, "test_ssim": 0.660588},
-    {"id": 7, "description": "cfp: Adam optimizer", "cfp_test_rmse": 0.050898, "cfp_test_ssim": 0.765296},
-    {"id": 25, "description": "mlp: OneCycleLR", "test_rmse": 0.052590, "test_ssim": 0.699099},
-    {"id": 34, "description": "mlp: MSE+L1 loss", "test_rmse": 0.052170, "test_ssim": 0.774337},
-    {"id": 36, "description": "cfp: MSE+L1 loss", "cfp_test_rmse": 0.051292, "cfp_test_ssim": 0.793598}
+    {"id": 6, "description": "mlp: wider layers (512→4096)", "delta": "RMSE 0.0534→0.0527"},
+    {"id": 7, "description": "cfp: Adam optimizer", "delta": "CFP RMSE 0.0525→0.0509"},
+    {"id": 25, "description": "mlp: OneCycleLR scheduler", "delta": "SSIM 0.661→0.699"},
+    {"id": 34, "description": "mlp: MSE+L1 loss", "delta": "RMSE 0.0526→0.0522, SSIM 0.699→0.774"},
+    {"id": 36, "description": "cfp: MSE+L1 loss", "delta": "CFP SSIM 0.762→0.794"}
   ],
   "progress_from_baseline": {
-    "baseline_test_rmse": 0.053370,
-    "current_test_rmse": 0.052170,
-    "rmse_improvement": 0.001200,
-    "baseline_test_ssim": 0.671413,
-    "current_test_ssim": 0.774337,
-    "ssim_improvement": 0.102924,
-    "baseline_cfp_ssim": 0.735013,
-    "current_cfp_ssim": 0.793598,
-    "cfp_ssim_improvement": 0.058585
+    "test_rmse": "0.053370 → 0.052170 (-2.2%)",
+    "test_ssim": "0.671413 → 0.774337 (+15.3%)",
+    "cfp_test_rmse": "0.053058 → 0.051292 (-3.3%)",
+    "cfp_test_ssim": "0.735013 → 0.793598 (+8.0%)"
   },
-  "idea_queue": [
-    "mlp: try SiLU/Swish activation with current setup",
-    "cfp: OneCycleLR for CFP",
-    "mlp: Sigmoid output with MSE+L1",
-    "mlp: try larger L1 weight (0.15) for CFP",
-    "cfp: wider channels (64) now that loss is optimized"
+  "failed_since_last_kept": [
+    {"id": 35, "description": "L1 weight 0.2", "result": "SSIM better but RMSE increased"},
+    {"id": 37, "description": "Sigmoid + MSE+L1 + OneCycleLR", "result": "RMSE 0.055 terrible"},
+    {"id": 38, "description": "SiLU activation", "result": "RMSE 0.062 terrible"},
+    {"id": 39, "description": "CFP OneCycleLR", "result": "CFP RMSE worse"},
+    {"id": 40, "description": "Gradient clipping", "result": "No change"},
+    {"id": 41, "description": "Fewer wider layers", "result": "RMSE 0.054 worse"}
   ],
-  "notes": "MSE+L1 loss helped both MLP and CFP. Overall: RMSE 0.0534→0.0522, SSIM 0.671→0.774, CFP SSIM 0.735→0.794. Five kept improvements."
+  "idea_queue": [
+    "mlp: pure L1 loss (no MSE)",
+    "mlp: AdamW with weight decay + current setup",
+    "cfp: higher CFP LR (2e-3) with ReduceLROnPlateau",
+    "mlp: Huber loss (delta=1.0) — large delta for near-MSE behavior with outlier robustness",
+    "mlp: try batch size 128 for more gradient noise"
+  ],
+  "notes": "41 experiments, 5 kept. Approaching diminishing returns. Key insight: MSE+L1 loss is the most impactful single change, benefiting both models."
 }
