@@ -180,12 +180,13 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
 
     model = CFPModel().to(DEVICE)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=CFP_LR, momentum=CFP_MOMENTUM)
+    optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=15)
 
     print("Training CFP...")
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
-        None, CFP_EPOCHS, None, DEVICE,
+        scheduler, CFP_EPOCHS, 30, DEVICE,
     )
 
     path = os.path.join(checkpoint_dir, "cfp_best.pt")
