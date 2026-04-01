@@ -11,7 +11,7 @@ from .config import (
     CFP_LR, CFP_MOMENTUM, CFP_EPOCHS,
     MLP_TRAIN_SIZE, MLP_VAL_SIZE,
     CFP_TRAIN_SIZE, CFP_VAL_SIZE,
-    MLP_ENSEMBLE_SIZE,
+    MLP_ENSEMBLE_SIZE, GRAD_CLIP_NORM, L1_WEIGHT,
 )
 from .models.mlp_model import MLPModel, EnsembleMLPModel
 from .models.cfp_model import CFPModel
@@ -29,7 +29,8 @@ class MSEPlusL1Loss(nn.Module):
 
 
 def train_loop(model, train_loader, val_loader, criterion, optimizer,
-               scheduler, epochs, patience, device, use_amp=False):
+               scheduler, epochs, patience, device, use_amp=False,
+               grad_clip_norm=None):
     """Training loop with optional early stopping.
 
     Returns:
@@ -57,6 +58,9 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
                 output = model(batch_x)
                 loss = criterion(output, batch_y)
             scaler.scale(loss).backward()
+            if grad_clip_norm is not None:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
             scaler.step(optimizer)
             scaler.update()
 
@@ -140,7 +144,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
             TensorDataset(X_val, y_val), batch_size=BATCH_SIZE, shuffle=False,
         )
 
-        criterion = MSEPlusL1Loss(l1_weight=0.1)
+        criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
         optimizer = torch.optim.Adam(member.parameters(), lr=MLP_LR)
         steps_per_epoch = len(train_loader)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
@@ -152,6 +156,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
         history = train_loop(
             member, train_loader, val_loader, criterion, optimizer,
             scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
+            grad_clip_norm=GRAD_CLIP_NORM,
         )
         trained_members.append(member)
         all_histories.append(history)
@@ -219,14 +224,19 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     )
 
     model = CFPModel().to(DEVICE)
-    criterion = MSEPlusL1Loss(l1_weight=0.1)
+    criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=15)
+    steps_per_epoch = len(train_loader)
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer, max_lr=3e-3, epochs=CFP_EPOCHS,
+        steps_per_epoch=steps_per_epoch, pct_start=0.3,
+    )
 
     print("Training CFP...")
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
-        scheduler, CFP_EPOCHS, 30, DEVICE,
+        scheduler, CFP_EPOCHS, None, DEVICE,
+        grad_clip_norm=GRAD_CLIP_NORM,
     )
 
     path = os.path.join(checkpoint_dir, "cfp_best.pt")
