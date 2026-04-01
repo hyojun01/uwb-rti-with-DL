@@ -6,10 +6,12 @@ class ResidualBlock(nn.Module):
     def __init__(self):
         super().__init__()
         self.block = nn.Sequential(
-            nn.Conv2d(32, 16, kernel_size=3, padding=1),
-            nn.BatchNorm2d(16),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=1),
+            nn.Conv2d(32, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, padding=1),
         )
 
     def forward(self, x):
