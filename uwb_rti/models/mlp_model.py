@@ -24,10 +24,9 @@ class MLPModel(nn.Module):
             nn.Dropout(0.2),
             nn.Linear(4096, 900),
         )
-        self.skip = nn.Linear(16, 900)
 
     def forward(self, x):
-        return self.network(x) + self.skip(x)
+        return self.network(x)
 
 
 class EnsembleMLPModel(nn.Module):
