@@ -158,32 +158,6 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
 
     ensemble = EnsembleMLPModel(trained_members).to(DEVICE)
 
-    # Optimize ensemble weights on validation set
-    ensemble.eval()
-    with torch.no_grad():
-        member_preds = []
-        for member in ensemble.members:
-            preds = []
-            for start in range(0, X_val.size(0), BATCH_SIZE):
-                end = min(start + BATCH_SIZE, X_val.size(0))
-                batch = X_val[start:end].to(DEVICE)
-                preds.append(member(batch).cpu())
-            member_preds.append(torch.cat(preds, dim=0))
-        # Stack: (n_members, n_val, 900)
-        P = torch.stack(member_preds).numpy()
-        Y = y_val.numpy()
-        n_members = P.shape[0]
-        # Solve for weights: minimize ||sum(w_i * P_i) - Y||^2 s.t. w >= 0, sum(w) = 1
-        # Reshape to 2D for lstsq: (n_val*900, n_members)
-        A = P.reshape(n_members, -1).T
-        b = Y.reshape(-1)
-        weights, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-        # Clip negative weights and re-normalize
-        weights = np.maximum(weights, 0.0)
-        weights = weights / weights.sum()
-        ensemble.set_weights(weights)
-        print(f"Ensemble weights: {weights}")
-
     path = os.path.join(checkpoint_dir, "mlp_best.pt")
     torch.save(ensemble.state_dict(), path)
     print(f"MLP ensemble ({MLP_ENSEMBLE_SIZE} members) saved to {path}")
@@ -247,16 +221,12 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     model = CFPModel().to(DEVICE)
     criterion = MSEPlusL1Loss(l1_weight=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
-    steps_per_epoch = len(train_loader)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer, max_lr=3e-3, epochs=CFP_EPOCHS,
-        steps_per_epoch=steps_per_epoch, pct_start=0.3,
-    )
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=15)
 
     print("Training CFP...")
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
-        scheduler, CFP_EPOCHS, None, DEVICE,
+        scheduler, CFP_EPOCHS, 30, DEVICE,
     )
 
     path = os.path.join(checkpoint_dir, "cfp_best.pt")
