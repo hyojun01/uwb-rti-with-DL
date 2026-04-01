@@ -13,15 +13,23 @@ from .visualize import (
     plot_reconstruction_grid, plot_error_maps,
     plot_noise_comparison_table,
 )
-from .models.mlp_model import MLPModel
+from .models.mlp_model import MLPModel, EnsembleMLPModel
 from .models.cfp_model import CFPModel
 
 
 def load_models(checkpoint_dir="checkpoints"):
     """Load trained MLP and CFP models from checkpoints."""
-    mlp_model = MLPModel().to(DEVICE)
     mlp_path = os.path.join(checkpoint_dir, "mlp_best.pt")
-    mlp_model.load_state_dict(torch.load(mlp_path, map_location=DEVICE, weights_only=True))
+    state_dict = torch.load(mlp_path, map_location=DEVICE, weights_only=True)
+
+    if any(k.startswith("members.") for k in state_dict):
+        num_members = max(int(k.split(".")[1]) for k in state_dict if k.startswith("members.")) + 1
+        members = [MLPModel() for _ in range(num_members)]
+        mlp_model = EnsembleMLPModel(members).to(DEVICE)
+    else:
+        mlp_model = MLPModel().to(DEVICE)
+
+    mlp_model.load_state_dict(state_dict)
     mlp_model.eval()
 
     cfp_model = CFPModel().to(DEVICE)
