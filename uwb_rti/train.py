@@ -151,7 +151,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
         print(f"\nTraining MLP member {i + 1}/{MLP_ENSEMBLE_SIZE} (seed={seed})...")
         history = train_loop(
             member, train_loader, val_loader, criterion, optimizer,
-            scheduler, MLP_EPOCHS, None, DEVICE,
+            scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
         )
         trained_members.append(member)
         all_histories.append(history)
@@ -221,16 +221,12 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     model = CFPModel().to(DEVICE)
     criterion = MSEPlusL1Loss(l1_weight=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
-    steps_per_epoch = len(train_loader)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer, max_lr=3e-3, epochs=CFP_EPOCHS,
-        steps_per_epoch=steps_per_epoch, pct_start=0.3,
-    )
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=15)
 
     print("Training CFP...")
     history = train_loop(
         model, train_loader, val_loader, criterion, optimizer,
-        scheduler, CFP_EPOCHS, None, DEVICE,
+        scheduler, CFP_EPOCHS, 30, DEVICE,
     )
 
     path = os.path.join(checkpoint_dir, "cfp_best.pt")
