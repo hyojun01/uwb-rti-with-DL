@@ -28,6 +28,22 @@ class MSEPlusL1Loss(nn.Module):
         return self.mse(pred, target) + self.l1_weight * self.l1(pred, target)
 
 
+class MSEPlusL1PlusTVLoss(nn.Module):
+    """MSE + L1 + Total Variation loss for spatial regularization."""
+    def __init__(self, l1_weight=0.1, tv_weight=0.02):
+        super().__init__()
+        self.mse = nn.MSELoss()
+        self.l1 = nn.L1Loss()
+        self.l1_weight = l1_weight
+        self.tv_weight = tv_weight
+
+    def forward(self, pred, target):
+        mse_l1 = self.mse(pred, target) + self.l1_weight * self.l1(pred, target)
+        tv = (torch.abs(pred[:, :, 1:, :] - pred[:, :, :-1, :]).mean()
+              + torch.abs(pred[:, :, :, 1:] - pred[:, :, :, :-1]).mean())
+        return mse_l1 + self.tv_weight * tv
+
+
 def train_loop(model, train_loader, val_loader, criterion, optimizer,
                scheduler, epochs, patience, device, use_amp=False,
                grad_clip_norm=None):
@@ -224,7 +240,7 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     )
 
     model = CFPModel().to(DEVICE)
-    criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
+    criterion = MSEPlusL1PlusTVLoss(l1_weight=L1_WEIGHT, tv_weight=0.02)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
     steps_per_epoch = len(train_loader)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
