@@ -125,12 +125,15 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     trained_members = []
     all_histories = []
 
+    dropout_rates = [0.2, 0.3, 0.4]
+
     for i in range(MLP_ENSEMBLE_SIZE):
         seed = RANDOM_SEED + i * 1000
         torch.manual_seed(seed)
         np.random.seed(seed)
 
-        member = MLPModel().to(DEVICE)
+        dropout = dropout_rates[i % len(dropout_rates)]
+        member = MLPModel(dropout=dropout).to(DEVICE)
 
         train_loader = DataLoader(
             TensorDataset(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True,
