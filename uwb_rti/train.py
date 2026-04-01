@@ -11,7 +11,7 @@ from .config import (
     CFP_LR, CFP_MOMENTUM, CFP_EPOCHS,
     MLP_TRAIN_SIZE, MLP_VAL_SIZE,
     CFP_TRAIN_SIZE, CFP_VAL_SIZE,
-    MLP_ENSEMBLE_SIZE, ENSEMBLE_BAGGING_RATIO,
+    MLP_ENSEMBLE_SIZE,
 )
 from .models.mlp_model import MLPModel, EnsembleMLPModel
 from .models.cfp_model import CFPModel
@@ -132,20 +132,8 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
 
         member = MLPModel().to(DEVICE)
 
-        # Bagging: each member trains on a random subset of training data
-        if ENSEMBLE_BAGGING_RATIO < 1.0:
-            n_train = X_train.size(0)
-            n_bag = int(n_train * ENSEMBLE_BAGGING_RATIO)
-            rng = np.random.RandomState(seed)
-            bag_idx = torch.from_numpy(rng.choice(n_train, n_bag, replace=False))
-            X_bag = X_train[bag_idx]
-            y_bag = y_train[bag_idx]
-        else:
-            X_bag = X_train
-            y_bag = y_train
-
         train_loader = DataLoader(
-            TensorDataset(X_bag, y_bag), batch_size=BATCH_SIZE, shuffle=True,
+            TensorDataset(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True,
             generator=torch.Generator().manual_seed(seed),
         )
         val_loader = DataLoader(
