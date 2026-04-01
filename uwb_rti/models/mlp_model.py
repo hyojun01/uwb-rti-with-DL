@@ -3,25 +3,25 @@ import torch.nn as nn
 
 
 class MLPModel(nn.Module):
-    def __init__(self, dropout=0.3):
+    def __init__(self):
         super().__init__()
         self.network = nn.Sequential(
             nn.Linear(16, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(512, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(1024, 2048),
             nn.BatchNorm1d(2048),
             nn.ReLU(),
-            nn.Dropout(dropout),
+            nn.Dropout(0.3),
             nn.Linear(2048, 4096),
             nn.BatchNorm1d(4096),
             nn.ReLU(),
-            nn.Dropout(max(dropout - 0.1, 0.1)),
+            nn.Dropout(0.2),
             nn.Linear(4096, 900),
         )
 
