@@ -144,7 +144,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
             TensorDataset(X_val, y_val), batch_size=BATCH_SIZE, shuffle=False,
         )
 
-        criterion = MSEPlusL1Loss(l1_weight=0.1)
+        criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
         optimizer = torch.optim.Adam(member.parameters(), lr=MLP_LR)
         steps_per_epoch = len(train_loader)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
