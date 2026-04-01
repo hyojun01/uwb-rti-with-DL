@@ -64,10 +64,8 @@ MLP_EPOCHS = 300
 MLP_PATIENCE = 30
 CFP_LR = 0.001
 CFP_MOMENTUM = 0.9
-CFP_EPOCHS = 300
+CFP_EPOCHS = 200
 MLP_ENSEMBLE_SIZE = 3
-GRAD_CLIP_NORM = 1.0
-L1_WEIGHT = 0.15
 
 # Device
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
