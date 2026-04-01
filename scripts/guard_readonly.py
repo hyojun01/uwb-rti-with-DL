@@ -8,7 +8,6 @@ import json
 
 READONLY_FILES = {
     "uwb_rti/forward_model.py",
-    "uwb_rti/data_generator.py",
     "uwb_rti/evaluate.py",
     "uwb_rti/visualize.py",
     "uwb_rti/main.py",

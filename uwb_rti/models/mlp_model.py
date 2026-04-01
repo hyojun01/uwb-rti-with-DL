@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 
@@ -26,3 +27,15 @@ class MLPModel(nn.Module):
 
     def forward(self, x):
         return self.network(x)
+
+
+class EnsembleMLPModel(nn.Module):
+    """Wraps multiple trained MLPModel instances and averages their predictions."""
+
+    def __init__(self, members):
+        super().__init__()
+        self.members = nn.ModuleList(members)
+
+    def forward(self, x):
+        outputs = [member(x) for member in self.members]
+        return torch.stack(outputs).mean(dim=0)

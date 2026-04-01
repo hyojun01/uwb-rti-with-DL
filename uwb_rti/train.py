@@ -11,8 +11,9 @@ from .config import (
     CFP_LR, CFP_MOMENTUM, CFP_EPOCHS,
     MLP_TRAIN_SIZE, MLP_VAL_SIZE,
     CFP_TRAIN_SIZE, CFP_VAL_SIZE,
+    MLP_ENSEMBLE_SIZE,
 )
-from .models.mlp_model import MLPModel
+from .models.mlp_model import MLPModel, EnsembleMLPModel
 from .models.cfp_model import CFPModel
 
 
@@ -109,11 +110,8 @@ def train_loop(model, train_loader, val_loader, criterion, optimizer,
 
 
 def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
-    """Train MLP model on MLP dataset."""
+    """Train an ensemble of MLP models with different seeds."""
     os.makedirs(checkpoint_dir, exist_ok=True)
-
-    torch.manual_seed(RANDOM_SEED)
-    np.random.seed(RANDOM_SEED)
 
     data = np.load(os.path.join(data_dir, "mlp_data.npz"))
     rss = data["rss"]
@@ -124,33 +122,49 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
     X_val = torch.FloatTensor(rss[MLP_TRAIN_SIZE:MLP_TRAIN_SIZE + MLP_VAL_SIZE])
     y_val = torch.FloatTensor(theta_ideal[MLP_TRAIN_SIZE:MLP_TRAIN_SIZE + MLP_VAL_SIZE])
 
-    train_loader = DataLoader(
-        TensorDataset(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True
-    )
-    val_loader = DataLoader(
-        TensorDataset(X_val, y_val), batch_size=BATCH_SIZE, shuffle=False
-    )
+    trained_members = []
+    all_histories = []
 
-    model = MLPModel().to(DEVICE)
-    criterion = MSEPlusL1Loss(l1_weight=0.1)
-    optimizer = torch.optim.Adam(model.parameters(), lr=MLP_LR)
-    steps_per_epoch = len(train_loader)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer, max_lr=3e-3, epochs=MLP_EPOCHS,
-        steps_per_epoch=steps_per_epoch, pct_start=0.3,
-    )
+    for i in range(MLP_ENSEMBLE_SIZE):
+        seed = RANDOM_SEED + i * 1000
+        torch.manual_seed(seed)
+        np.random.seed(seed)
 
-    print("Training MLP...")
-    history = train_loop(
-        model, train_loader, val_loader, criterion, optimizer,
-        scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
-    )
+        member = MLPModel().to(DEVICE)
+
+        train_loader = DataLoader(
+            TensorDataset(X_train, y_train), batch_size=BATCH_SIZE, shuffle=True,
+            generator=torch.Generator().manual_seed(seed),
+        )
+        val_loader = DataLoader(
+            TensorDataset(X_val, y_val), batch_size=BATCH_SIZE, shuffle=False,
+        )
+
+        criterion = MSEPlusL1Loss(l1_weight=0.1)
+        optimizer = torch.optim.Adam(member.parameters(), lr=MLP_LR)
+        steps_per_epoch = len(train_loader)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer, max_lr=3e-3, epochs=MLP_EPOCHS,
+            steps_per_epoch=steps_per_epoch, pct_start=0.3,
+        )
+
+        print(f"\nTraining MLP member {i + 1}/{MLP_ENSEMBLE_SIZE} (seed={seed})...")
+        history = train_loop(
+            member, train_loader, val_loader, criterion, optimizer,
+            scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
+        )
+        trained_members.append(member)
+        all_histories.append(history)
+
+    ensemble = EnsembleMLPModel(trained_members).to(DEVICE)
 
     path = os.path.join(checkpoint_dir, "mlp_best.pt")
-    torch.save(model.state_dict(), path)
-    print(f"MLP model saved to {path}")
+    torch.save(ensemble.state_dict(), path)
+    print(f"MLP ensemble ({MLP_ENSEMBLE_SIZE} members) saved to {path}")
 
-    return model, history
+    best_idx = min(range(len(all_histories)),
+                   key=lambda j: min(all_histories[j]["val_loss"]))
+    return ensemble, all_histories[best_idx]
 
 
 def generate_cfp_training_data(mlp_model, data_dir="data"):
