@@ -12,6 +12,14 @@ globs: ["uwb_rti/models/*.py"]
 - Do not add external data dependencies (no loading files in forward pass)
 - Keep the model single-GPU compatible (no distributed training)
 
+## EnsembleMLPModel constraints
+
+- Must wrap members in `nn.ModuleList` (so parameters are registered for save/load)
+- `forward()` must accept the same input as a single MLPModel and return the same shape
+- All members must have output dim 900 — architecture variations between members are allowed but output shape must match
+- Aggregation method (mean, weighted mean, etc.) is modifiable but must produce (batch, 900)
+- `torch.save(ensemble.state_dict(), path)` must work for checkpointing
+
 ## CFP model constraints
 
 - Input shape must remain (batch, 1, 30, 30) — single-channel 30x30 image
@@ -26,3 +34,4 @@ globs: ["uwb_rti/models/*.py"]
 - No external model libraries (no timm, no transformers, no einops)
 - Keep parameter count reasonable — watch for OOM on single GPU
 - Test the model instantiation: `model = MLPModel()` or `model = CFPModel()` must not error
+- `EnsembleMLPModel([MLPModel(), MLPModel()])` must also not error

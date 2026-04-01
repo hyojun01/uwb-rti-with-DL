@@ -27,8 +27,14 @@ globs: ["uwb_rti/config.py"]
 - `CFP_MOMENTUM` — range: 0.8 to 0.99
 - `CFP_EPOCHS` — range: 50 to 500
 
+## Ensemble parameters (CAN modify)
+
+- `MLP_ENSEMBLE_SIZE` — range: 1 to 7 (watch training time: N members = N× MLP training)
+- When `MLP_ENSEMBLE_SIZE = 1`, the system should still work (single model wrapped in ensemble)
+
 ## CAN add new hyperparameters
 
 - New constants for model architecture (e.g., `MLP_HIDDEN_DIMS`, `CFP_NUM_BLOCKS`)
 - New training parameters (e.g., `WEIGHT_DECAY`, `GRAD_CLIP_NORM`)
+- New ensemble parameters (e.g., `ENSEMBLE_BAGGING_RATIO`, `ENSEMBLE_DROPOUT_RANGE`)
 - Always add at the end of the "Training hyperparameters" section

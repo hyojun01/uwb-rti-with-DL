@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "NEVER STOP. You are an autonomous researcher. Continue the experiment loop. Read experiment-state.json, pick the next idea, and run the next experiment. Do NOT ask the human for confirmation."
+            "prompt": "NEVER STOP. You are an autonomous researcher optimizing ensemble MLP models. Continue the experiment loop. Read experiment-state.json, pick the next idea from idea_queue, and run the next experiment. Do NOT ask the human for confirmation."
           }
         ]
       }
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Reminder: you are running autonomous experiments to lower test_rmse. Check experiment-state.json for current best and history. Do not stop."
+            "prompt": "Reminder: you are running autonomous ensemble experiments to lower cfp_test_rmse. Check experiment-state.json for current best, ensemble_config, and idea_queue. Do not stop."
           }
         ]
       }

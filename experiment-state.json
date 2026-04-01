@@ -1,51 +1,129 @@
 {
   "project": "uwb-rti-autoresearch",
-  "status": "paused",
-  "branch": "autoresearch/mar30",
+  "status": "ready",
+  "branch": null,
   "current_experiment": null,
-  "total_experiments": 43,
+  "total_experiments": 0,
+  "data_provenance": {
+    "generator_commit": "c947516",
+    "note": "Original data generator, no augmentation modifications"
+  },
+  "ensemble_config": {
+    "current_size": 3,
+    "diversity_method": "seed_only",
+    "notes": "Baseline ensemble: 3 members, same architecture, different seeds (42, 1042, 2042)"
+  },
   "best": {
+    "commit": null,
+    "test_rmse": null,
+    "test_ssim": null,
+    "cfp_test_rmse": null,
+    "cfp_test_ssim": null,
+    "ensemble_size": null,
+    "description": null,
+    "experiment_id": null
+  },
+  "pre_ensemble_baseline": {
     "commit": "d7e866b",
     "test_rmse": 0.052170,
     "test_ssim": 0.774337,
     "cfp_test_rmse": 0.051292,
     "cfp_test_ssim": 0.793598,
-    "description": "wider MLP + OneCycleLR + MSE+L1 loss for both MLP and CFP",
-    "experiment_id": 36
+    "description": "Single MLP: wider layers + OneCycleLR + MSE+L1 loss (43 experiments)",
+    "note": "Best result with single MLP before ensemble was introduced"
   },
-  "kept_experiments": [
-    {"id": 6, "description": "mlp: wider layers (512→4096)", "delta": "RMSE 0.0534→0.0527"},
-    {"id": 7, "description": "cfp: Adam optimizer", "delta": "CFP RMSE 0.0525→0.0509"},
-    {"id": 25, "description": "mlp: OneCycleLR scheduler", "delta": "SSIM 0.661→0.699"},
-    {"id": 34, "description": "mlp: MSE+L1 loss", "delta": "RMSE 0.0526→0.0522, SSIM 0.699→0.774"},
-    {"id": 36, "description": "cfp: MSE+L1 loss", "delta": "CFP SSIM 0.762→0.794"}
+  "experiments": [],
+  "kept_experiments": [],
+  "idea_queue": [
+    {
+      "id": "E01",
+      "idea": "Ensemble baseline (N=3, seed-only diversity)",
+      "rationale": "Establish baseline with current ensemble structure before tuning",
+      "risk": "low"
+    },
+    {
+      "id": "E02",
+      "idea": "Ensemble size sweep: N=2, 3, 5",
+      "rationale": "Find optimal member count balancing diversity vs training time",
+      "risk": "low"
+    },
+    {
+      "id": "E03",
+      "idea": "Bagging: each member trains on random 80% of data",
+      "rationale": "Data subsampling increases member diversity beyond seed variation",
+      "risk": "medium"
+    },
+    {
+      "id": "E04",
+      "idea": "Hyperparameter diversity: vary dropout (0.2-0.4) per member",
+      "rationale": "Different regularization creates more diverse learned representations",
+      "risk": "medium"
+    },
+    {
+      "id": "E05",
+      "idea": "Hyperparameter diversity: vary learning rate per member",
+      "rationale": "Different LR leads to different loss surface convergence points",
+      "risk": "medium"
+    },
+    {
+      "id": "E06",
+      "idea": "Architecture diversity: vary hidden layer widths per member",
+      "rationale": "Heterogeneous architectures capture different aspects of the mapping",
+      "risk": "high"
+    },
+    {
+      "id": "E07",
+      "idea": "Weighted ensemble: learn optimal member weights on validation set",
+      "rationale": "Some members may be more accurate; weighting beats uniform average",
+      "risk": "medium"
+    },
+    {
+      "id": "E08",
+      "idea": "Snapshot ensemble: save checkpoints at different training epochs",
+      "rationale": "Gets N models for cost of training one, using cyclic LR",
+      "risk": "medium"
+    },
+    {
+      "id": "E09",
+      "idea": "MC Dropout ensemble: single model with dropout at inference time",
+      "rationale": "Cheapest ensemble — no extra training, just multiple forward passes",
+      "risk": "low"
+    },
+    {
+      "id": "E10",
+      "idea": "Ensemble + CFP ensemble: also ensemble CFP models",
+      "rationale": "If MLP ensemble helps, CFP ensemble may further reduce post-processing noise",
+      "risk": "high"
+    },
+    {
+      "id": "E11",
+      "idea": "Knowledge distillation: train student from ensemble teacher",
+      "rationale": "Compress ensemble knowledge into single model for FPGA deployment",
+      "risk": "medium"
+    },
+    {
+      "id": "E12",
+      "idea": "Data augmentation: add noise variations to training RSS",
+      "rationale": "More robust ensemble members with augmented data diversity",
+      "risk": "medium"
+    }
   ],
-  "progress_from_baseline": {
-    "test_rmse": "0.053370 → 0.052170 (-2.2%)",
-    "test_ssim": "0.671413 → 0.774337 (+15.3%)",
-    "cfp_test_rmse": "0.053058 → 0.051292 (-3.3%)",
-    "cfp_test_ssim": "0.735013 → 0.793598 (+8.0%)"
-  },
-  "key_findings": {
+  "ideas_tried": [],
+  "key_findings_from_previous_sessions": {
+    "session_1_2_summary": "43 experiments on single MLP. Best: wider MLP [512->4096] + OneCycleLR + MSE+L1 loss for both stages.",
     "what_worked": [
       "Wider MLP layers (more capacity for 900-dim output)",
       "Adam optimizer for CFP (vs SGD)",
-      "OneCycleLR scheduler with warmup (vs ReduceLROnPlateau)",
+      "OneCycleLR scheduler with warmup",
       "MSE+L1 combined loss (L1 matches sparse target distribution)"
     ],
-    "what_consistently_failed": [
-      "Activation changes (GELU, SiLU both terrible, ReLU is optimal)",
+    "what_failed": [
+      "Activation changes (GELU, SiLU -- ReLU is optimal)",
       "Dropout reduction (model needs regularization)",
-      "Sigmoid output (amazing SSIM but always hurts RMSE)",
-      "Wider CFP channels (MLP quality is the bottleneck, not CFP capacity)",
+      "Sigmoid output (great SSIM but always hurts RMSE)",
+      "Wider CFP channels (MLP quality is the bottleneck)",
       "Deeper/tapered MLP (compression before output hurts)",
-      "Weight decay (not needed with existing BatchNorm+Dropout)"
-    ],
-    "interesting_tradeoffs": [
-      "Sigmoid gives SSIM 0.82-0.85 but RMSE 0.053+ (fundamental RMSE/SSIM tension)",
-      "Huber loss consistently boosts SSIM at RMSE cost",
-      "L1 weight 0.2 gives better SSIM but slightly worse RMSE than 0.1"
+      "Weight decay (not needed with BatchNorm+Dropout)"
     ]
-  },
-  "notes": "43 experiments, 5 kept. Model is well-optimized. Next session could explore: different data augmentation, ensemble methods, or completely different architectures."
+  }
 }
