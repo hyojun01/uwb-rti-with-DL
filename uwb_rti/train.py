@@ -144,7 +144,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
             TensorDataset(X_val, y_val), batch_size=BATCH_SIZE, shuffle=False,
         )
 
-        criterion = nn.HuberLoss(delta=0.1)
+        criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
         optimizer = torch.optim.Adam(member.parameters(), lr=MLP_LR)
         steps_per_epoch = len(train_loader)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
@@ -224,7 +224,7 @@ def train_cfp(data_dir="data", checkpoint_dir="checkpoints"):
     )
 
     model = CFPModel().to(DEVICE)
-    criterion = nn.HuberLoss(delta=0.1)
+    criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
     optimizer = torch.optim.Adam(model.parameters(), lr=CFP_LR)
     steps_per_epoch = len(train_loader)
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
