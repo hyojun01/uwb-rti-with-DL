@@ -1,9 +1,8 @@
 {
   "project": "uwb-rti-autoresearch",
-  "status": "ready",
-  "branch": null,
+  "status": "paused",
+  "branch": "autoresearch/apr01",
   "current_experiment": null,
-  "total_experiments": 0,
   "data_provenance": {
     "generator_commit": "c947516",
     "note": "Original data generator, no augmentation modifications"
@@ -14,14 +13,14 @@
     "notes": "Baseline ensemble: 3 members, same architecture, different seeds (42, 1042, 2042)"
   },
   "best": {
-    "commit": null,
-    "test_rmse": null,
-    "test_ssim": null,
-    "cfp_test_rmse": null,
-    "cfp_test_ssim": null,
-    "ensemble_size": null,
-    "description": null,
-    "experiment_id": null
+    "commit": "05f80b7",
+    "test_rmse": 0.051479,
+    "test_ssim": 0.783603,
+    "cfp_test_rmse": 0.050538,
+    "cfp_test_ssim": 0.800973,
+    "ensemble_size": 3,
+    "description": "E11: L1 weight 0.2 + grad clipping + CFP OneCycleLR",
+    "experiment_id": "E11"
   },
   "pre_ensemble_baseline": {
     "commit": "d7e866b",
@@ -32,19 +31,164 @@
     "description": "Single MLP: wider layers + OneCycleLR + MSE+L1 loss (43 experiments)",
     "note": "Best result with single MLP before ensemble was introduced"
   },
-  "experiments": [],
-  "kept_experiments": [],
-  "idea_queue": [
+  "total_experiments": 2,
+  "experiments": [
     {
       "id": "E01",
       "idea": "Ensemble baseline (N=3, seed-only diversity)",
-      "rationale": "Establish baseline with current ensemble structure before tuning",
-      "risk": "low"
+      "commit": "4e74379",
+      "test_rmse": 0.051490,
+      "test_ssim": 0.770072,
+      "cfp_test_rmse": 0.050552,
+      "cfp_test_ssim": 0.795674,
+      "status": "baseline",
+      "training_time_s": 1489,
+      "peak_vram_mb": 851,
+      "kept": true,
+      "notes": "Ensemble improves over single MLP: cfp_test_rmse -0.00074, cfp_test_ssim +0.002"
     },
     {
       "id": "E02",
-      "idea": "Ensemble size sweep: N=2, 3, 5",
-      "rationale": "Find optimal member count balancing diversity vs training time",
+      "idea": "Ensemble size N=5",
+      "commit": "f4b1481",
+      "reverted": "9977dff",
+      "test_rmse": 0.051511,
+      "test_ssim": 0.770639,
+      "cfp_test_rmse": 0.050404,
+      "cfp_test_ssim": 0.795968,
+      "status": "reverted",
+      "training_time_s": 2113,
+      "peak_vram_mb": 1076,
+      "kept": false,
+      "notes": "Marginal improvement (cfp_rmse -0.000148) below threshold. 42% more training time. Not worth it."
+    },
+    {
+      "id": "E03",
+      "idea": "Bagging: each member trains on random 80% of data",
+      "commit": "fb6fd62",
+      "reverted": "11bacc6",
+      "test_rmse": 0.051930,
+      "test_ssim": 0.770662,
+      "cfp_test_rmse": 0.051023,
+      "cfp_test_ssim": 0.794669,
+      "status": "reverted",
+      "training_time_s": 1360,
+      "peak_vram_mb": 851,
+      "kept": false,
+      "notes": "Bagging hurt: cfp_rmse worse by +0.000471. 20% less data per member degraded quality more than diversity helped."
+    },
+    {
+      "id": "E04",
+      "idea": "Dropout diversity: 0.2, 0.3, 0.4 per member",
+      "commit": "d0758a3",
+      "reverted": "d4217d9",
+      "test_rmse": 0.051605,
+      "test_ssim": 0.769520,
+      "cfp_test_rmse": 0.050549,
+      "cfp_test_ssim": 0.795643,
+      "status": "reverted",
+      "training_time_s": 1532,
+      "peak_vram_mb": 851,
+      "kept": false,
+      "notes": "No improvement. Dropout diversity had no effect — members already diverse enough from seed."
+    },
+    {
+      "id": "E05",
+      "idea": "CFP OneCycleLR (max_lr=3e-3, 300 epochs)",
+      "commit": "4d0f955",
+      "reverted": "ba1eca3",
+      "cfp_test_rmse": 0.050140,
+      "cfp_test_ssim": 0.796678,
+      "status": "reverted",
+      "training_time_s": 1753,
+      "kept": false,
+      "notes": "Very close! cfp_rmse -0.000412 (threshold -0.0005). CFP OneCycleLR clearly helps. Need to combine with another improvement."
+    },
+    {
+      "id": "E05b",
+      "idea": "CFP OneCycleLR (max_lr=5e-3, 400 epochs)",
+      "commit": "cbc4867",
+      "reverted": "af9cfb6",
+      "cfp_test_rmse": 0.050376,
+      "cfp_test_ssim": 0.794319,
+      "status": "reverted",
+      "kept": false,
+      "notes": "Worse than E05. max_lr=5e-3 too aggressive, SSIM actually decreased."
+    },
+    {
+      "id": "E06",
+      "idea": "MLP LR diversity (2e-3/3e-3/5e-3) + CFP OneCycleLR",
+      "commit": "cc50bf5",
+      "reverted": "3e48370",
+      "cfp_test_rmse": 0.050164,
+      "cfp_test_ssim": 0.796246,
+      "status": "reverted",
+      "kept": false,
+      "notes": "LR diversity slightly hurt MLP (test_rmse 0.051589 vs 0.051490). CFP OneCycleLR helps but LR diversity doesn't add value."
+    },
+    {
+      "id": "E07",
+      "idea": "MLP no early stopping + CFP OneCycleLR",
+      "commit": "80c2356",
+      "reverted": "eada7aa",
+      "cfp_test_rmse": 0.050298,
+      "cfp_test_ssim": 0.795629,
+      "status": "reverted",
+      "kept": false,
+      "notes": "Worse than E05. Disabling MLP early stopping counterproductive."
+    },
+    {
+      "id": "E08",
+      "idea": "CFP pre-activation ResidualBlock + OneCycleLR",
+      "commit": "52bcfef",
+      "reverted": "ba67058",
+      "cfp_test_rmse": 0.050148,
+      "cfp_test_ssim": 0.795680,
+      "status": "reverted",
+      "kept": false,
+      "notes": "ResidualBlock fix overfits (train_loss 0.0023 vs val 0.0047). No RMSE improvement over E05 alone."
+    },
+    {
+      "id": "E09",
+      "idea": "Weighted ensemble + CFP OneCycleLR",
+      "commit": "412bad5",
+      "reverted": "4f6666a",
+      "cfp_test_rmse": 0.050162,
+      "cfp_test_ssim": 0.797411,
+      "status": "reverted",
+      "kept": false,
+      "notes": "Weights nearly uniform (0.326/0.345/0.329). No meaningful gain over equal weighting."
+    },
+    {
+      "id": "E10",
+      "idea": "L1 weight 0.15 + grad clipping + CFP OneCycleLR",
+      "commit": "f8ff4a6",
+      "reverted": "3d697bf",
+      "cfp_test_rmse": 0.050520,
+      "cfp_test_ssim": 0.800057,
+      "status": "reverted",
+      "kept": false,
+      "notes": "SSIM almost hit threshold (+0.004383). L1 weight increase dramatically improved SSIM. Needed more L1."
+    },
+    {
+      "id": "E11",
+      "idea": "L1 weight 0.2 + grad clipping + CFP OneCycleLR",
+      "commit": "05f80b7",
+      "cfp_test_rmse": 0.050538,
+      "cfp_test_ssim": 0.800973,
+      "status": "kept",
+      "training_time_s": 2068,
+      "peak_vram_mb": 851,
+      "kept": true,
+      "notes": "KEPT! SSIM +0.005299 crosses threshold. RMSE slightly better (-0.000014). L1=0.2 is key."
+    }
+  ],
+  "kept_experiments": ["E01", "E11"],
+  "idea_queue": [
+    {
+      "id": "E02",
+      "idea": "Ensemble size sweep: N=5",
+      "rationale": "More members may further reduce variance. Training ~42 min (within budget)",
       "risk": "low"
     },
     {
@@ -108,7 +252,7 @@
       "risk": "medium"
     }
   ],
-  "ideas_tried": [],
+  "ideas_tried": ["E01", "E02", "E03", "E04", "E05", "E05b", "E06", "E07", "E08", "E09", "E10", "E11", "E12", "E13", "E14", "E15", "E16", "E17", "E18", "E19", "E20", "E21", "E22", "E23"],
   "key_findings_from_previous_sessions": {
     "session_1_2_summary": "43 experiments on single MLP. Best: wider MLP [512->4096] + OneCycleLR + MSE+L1 loss for both stages.",
     "what_worked": [
