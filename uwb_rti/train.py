@@ -145,9 +145,11 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
         )
 
         criterion = MSEPlusL1Loss(l1_weight=L1_WEIGHT)
-        optimizer = torch.optim.Adam(member.parameters(), lr=3e-3)
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(
-            optimizer, T_0=100, T_mult=1,
+        optimizer = torch.optim.Adam(member.parameters(), lr=MLP_LR)
+        steps_per_epoch = len(train_loader)
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(
+            optimizer, max_lr=3e-3, epochs=MLP_EPOCHS,
+            steps_per_epoch=steps_per_epoch, pct_start=0.3,
         )
 
         print(f"\nTraining MLP member {i + 1}/{MLP_ENSEMBLE_SIZE} (seed={seed})...")
