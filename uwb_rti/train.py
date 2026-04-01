@@ -156,7 +156,7 @@ def train_mlp(data_dir="data", checkpoint_dir="checkpoints"):
         history = train_loop(
             member, train_loader, val_loader, criterion, optimizer,
             scheduler, MLP_EPOCHS, MLP_PATIENCE, DEVICE,
-            use_amp=True, grad_clip_norm=GRAD_CLIP_NORM,
+            grad_clip_norm=GRAD_CLIP_NORM,
         )
         trained_members.append(member)
         all_histories.append(history)
